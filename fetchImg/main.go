@@ -26,15 +26,25 @@ func fetchImg(tgtDirText string) ([]Images, error) {
 		if err != nil && !os.IsPermission(err) { // ignore permission denied errors
 			return err
 		}
-		if strings.Contains(path, ".png") {
-			fileInfo, err := d.Info()
-			if err != nil {
-				return err
-			}
+
+		fileInfo, err := d.Info()
+		if err != nil {
+			return err
+		}
+		filetype := strings.ToLower(path)
+		if strings.Contains(filetype, "webp") ||
+			strings.Contains(filetype, "svg") ||
+			strings.Contains(filetype, "jpeg") ||
+			strings.Contains(filetype, "jpg") ||
+			strings.Contains(filetype, "gif") ||
+			strings.Contains(filetype, "png") ||
+			strings.Contains(filetype, "tiff") ||
+			strings.Contains(filetype, "bmp") {
 			imgPath = append(imgPath, path)
 			imgDate = append(imgDate, fileInfo.ModTime().Format("20060102150405"))
 			imgLen++
 		}
+
 		return nil
 	})
 	imgData := make([]Images, imgLen)
