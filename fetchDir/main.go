@@ -8,33 +8,46 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type Dirs struct {
-	Path string `json:"path"`
+	Path     string `json:"path"`
+	FullPath string `json:"full_path"`
+	Depth    int    `json:"depth"`
 }
 
 func fetchDir(tgtDirText string) ([]Dirs, error) {
+	var dirCount int
 	var dirPath []string
-	var dirLen int
+	var dirDepth []int
 	tgtDir := os.DirFS(tgtDirText)
 	err := fs.WalkDir(tgtDir, ".", func(path string, d fs.DirEntry, err error) error {
-		if err != nil && !os.IsPermission(err) { // ignore permission denied errors
+		if err != nil && !os.IsPermission(err) { // permission denied は無視
 			return err
 		}
 		if d.IsDir() == true {
 			dirPath = append(dirPath, path)
-			dirLen++
+			dirDepth = append(dirDepth, strings.Count(path, "/"))
+			dirCount++
 		}
 		return nil
 	})
-	dirData := make([]Dirs, dirLen)
+	dirData := make([]Dirs, dirCount-1) // 先頭のカレントディレクトリは抜かす
 	if err != nil {
 		return dirData, err
 	}
 
-	for i, v := range dirPath {
-		dirData[i].Path = v
+	if workingPath, errGetwd := os.Getwd(); errGetwd != nil {
+		return dirData, errGetwd
+	} else {
+		workingPath = workingPath + "/"
+		workingDepth := strings.Count(workingPath, "/")
+		for i := 1; i < dirCount; i++ { // 先頭のカレントディレクトリは抜かす
+			dirData[i-1].Path = dirPath[i]
+			dirData[i-1].FullPath = workingPath + dirPath[i]
+			dirData[i-1].Depth = workingDepth + dirDepth[i]
+		}
 	}
 
 	return dirData, nil
@@ -42,10 +55,10 @@ func fetchDir(tgtDirText string) ([]Dirs, error) {
 
 func main() {
 	// fetchDir
-	dirs := make([]Dirs, 1)
-	dirs, err := fetchDir("../../")
+	var dirs []Dirs
+	dirs, err := fetchDir("./")
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
 
 	// setup
@@ -59,7 +72,7 @@ func main() {
 
 		_, err := fmt.Fprint(w, buf.String())
 		if err != nil {
-			return
+			log.Fatal(err)
 		}
 	}
 
