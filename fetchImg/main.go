@@ -31,15 +31,15 @@ func fetchImg(tgtDirText string) ([]Images, error) {
 		if err != nil {
 			return err
 		}
-		filetype := strings.ToLower(path)
-		if strings.Contains(filetype, "webp") ||
-			strings.Contains(filetype, "svg") ||
-			strings.Contains(filetype, "jpeg") ||
-			strings.Contains(filetype, "jpg") ||
-			strings.Contains(filetype, "gif") ||
-			strings.Contains(filetype, "png") ||
-			strings.Contains(filetype, "tiff") ||
-			strings.Contains(filetype, "bmp") {
+		fileType := strings.ToLower(path)
+		if strings.Contains(fileType, "webp") ||
+			strings.Contains(fileType, "svg") ||
+			strings.Contains(fileType, "jpeg") ||
+			strings.Contains(fileType, "jpg") ||
+			strings.Contains(fileType, "gif") ||
+			strings.Contains(fileType, "png") ||
+			strings.Contains(fileType, "tiff") ||
+			strings.Contains(fileType, "bmp") {
 			imgPath = append(imgPath, path)
 			imgDate = append(imgDate, fileInfo.ModTime().Format("20060102150405"))
 			imgLen++
