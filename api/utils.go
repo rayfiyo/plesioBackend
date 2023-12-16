@@ -7,9 +7,16 @@ import (
 	"strings"
 )
 
-// ... (Receive, Result, Dirs, Images structs)
+func delImg(tgtPath string) (Result, error) {
+	var result Result
+	if err := os.Remove(tgtPath); err != nil {
+		result.Status = "failure"
+		return result, err
+	}
+	result.Status = "success"
+	return result, nil
+}
 
-// fetchDir retrieves directory information.
 func fetchDir(tgtDirText string) ([]Dirs, error) {
 	var dirCount int
 	var dirPath []string
@@ -46,7 +53,6 @@ func fetchDir(tgtDirText string) ([]Dirs, error) {
 	return dirData, nil
 }
 
-// fetchImg retrieves image information.
 func fetchImg(tgtDirText string) ([]Images, error) {
 	var imgLen int
 	var imgPath []string

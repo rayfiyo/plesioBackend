@@ -6,24 +6,25 @@ import (
 	"net/http"
 )
 
-type Receive struct {
-	Path string `json:"path"`
-	Dir  string `json:"dir"`
-}
-
-type Result struct {
-	Status string `json:"code"`
-}
-
 type Dirs struct {
-	Path     string `json:"path"`
 	FullPath string `json:"full_path"`
+	Path     string `json:"path"`
 	Depth    int    `json:"depth"`
 }
 
 type Images struct {
-	Path string `json:"path"`
 	Date string `json:"date"`
+	Path string `json:"path"`
+}
+
+type Receive struct {
+	Dir     string `json:"dir"`
+	ImgRoot string `json:"img_root"`
+	Path    string `json:"path"`
+}
+
+type Result struct {
+	Status string `json:"code"`
 }
 
 func main() {
@@ -32,7 +33,8 @@ func main() {
 	fmt.Println("http://localhost:8080/")
 	fmt.Println("curl -X POST http://localhost:8080/")
 	fmt.Println("touch testImg/unneeded.png")
-	fmt.Println("curl -X POST -H \"Content-Type: application/json\" -d '{\"dir\": \"../\"}' http://localhost:8080/")
+	fmt.Println("curl -X POST -H \"Content-Type: application/json\" -d '{\"dir\": \"/\"}' http://localhost:8080/")
+	fmt.Println("curl -X POST -H \"Content-Type: application/json\" -d '{\"img_root\": \"../\"}' http://localhost:8080/")
 	fmt.Println("curl -X POST -H \"Content-Type: application/json\" -d '{\"path\": \"testImg/unneeded.png\"}' http://localhost:8080/")
 
 	log.Fatal(http.ListenAndServe(":8080", nil))

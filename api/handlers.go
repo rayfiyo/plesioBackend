@@ -5,11 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"sort"
 )
-
-// ... (handlePostRequest, sorter, delImg functions)
 
 func HandlePostRequest(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -25,7 +22,50 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if receivedData.Path != "" {
+	if receivedData.Dir != "" {
+		// fetchDir
+		dirs, err := fetchDir(receivedData.Dir)
+		if err != nil {
+			http.Error(w, "Error fetching directories", http.StatusInternalServerError)
+			return
+		}
+
+		var buf bytes.Buffer
+		enc := json.NewEncoder(&buf)
+		if err := enc.Encode(&dirs); err != nil {
+			http.Error(w, "Error encoding path of directories", http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Println(buf.String())
+		_, err = fmt.Fprint(w, buf.String())
+		if err != nil {
+			http.Error(w, "Error writing response", http.StatusInternalServerError)
+			return
+		}
+	} else if receivedData.ImgRoot != "" {
+		// fetchImg
+		imgs, err := fetchImg(receivedData.ImgRoot)
+		if err != nil {
+			http.Error(w, "Error fetching images", http.StatusInternalServerError)
+			return
+		}
+		imgs = sorter(imgs)
+
+		var buf bytes.Buffer
+		enc := json.NewEncoder(&buf)
+		if err := enc.Encode(&imgs); err != nil {
+			http.Error(w, "Error encoding path of images", http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Println(buf.String())
+		_, err = fmt.Fprint(w, buf.String())
+		if err != nil {
+			http.Error(w, "Error writing response", http.StatusInternalServerError)
+			return
+		}
+	} else if receivedData.Path != "" {
 		// delImg
 		result, err := delImg(receivedData.Path)
 		if err != nil {
@@ -46,28 +86,6 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error writing response", http.StatusInternalServerError)
 			return
 		}
-	} else if receivedData.Dir != "" {
-		// fetchImg
-		imgs, err := fetchImg(receivedData.Dir)
-		if err != nil {
-			http.Error(w, "Error fetching images", http.StatusInternalServerError)
-			return
-		}
-		imgs = sorter(imgs)
-
-		var buf bytes.Buffer
-		enc := json.NewEncoder(&buf)
-		if err := enc.Encode(&imgs); err != nil {
-			http.Error(w, "Error encoding path of images", http.StatusInternalServerError)
-			return
-		}
-
-		fmt.Println(buf.String())
-		_, err = fmt.Fprint(w, buf.String())
-		if err != nil {
-			http.Error(w, "Error writing response", http.StatusInternalServerError)
-			return
-		}
 	}
 }
 
@@ -76,14 +94,4 @@ func sorter(imgs []Images) []Images {
 		return imgs[i].Date < imgs[j].Date
 	})
 	return imgs
-}
-
-func delImg(tgtPath string) (Result, error) {
-	var result Result
-	if err := os.Remove(tgtPath); err != nil {
-		result.Status = "failure"
-		return result, err
-	}
-	result.Status = "success"
-	return result, nil
 }
