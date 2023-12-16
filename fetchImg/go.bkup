@@ -72,48 +72,56 @@ func fetchImg(tgtDirText string) ([]Images, error) {
 }
 
 func handlePostRequest(w http.ResponseWriter, r *http.Request) {
-    if r.Method != http.MethodPost {
-        http.Error(w, "Only POST requests are allowed", http.StatusMethodNotAllowed)
-        return
-    }
+	if r.Method != http.MethodPost {
+		http.Error(w, "Only POST requests are allowed", http.StatusMethodNotAllowed)
+		return
+	}
 
-    var receivedData Receive
-    decoder := json.NewDecoder(r.Body)
-    err := decoder.Decode(&receivedData)
-    if err != nil {
-        http.Error(w, "Error decoding JSON", http.StatusBadRequest)
-        return
-    }
-    tgtDir = receivedData.Dir
+	var receivedData Receive
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&receivedData)
+	if err != nil {
+		http.Error(w, "Error decoding JSON", http.StatusBadRequest)
+		return
+	}
+	tgtDir = receivedData.Dir
 
-    // Fetch images after receiving the directory path
-    imgs, err := fetchImg(tgtDir)
-    if err != nil {
-        http.Error(w, "Error fetching images", http.StatusInternalServerError)
-        return
-    }
-    imgs = sorter(imgs)
-
-    var buf bytes.Buffer
-    enc := json.NewEncoder(&buf)
-    if err := enc.Encode(&imgs); err != nil {
-        http.Error(w, "Error encoding images", http.StatusInternalServerError)
-        return
-    }
-
-    fmt.Println(buf.String())
-    _, err = fmt.Fprint(w, buf.String())
-    if err != nil {
-        http.Error(w, "Error writing response", http.StatusInternalServerError)
-        return
-    }
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, "successfully")
 }
 
 func main() {
-    http.HandleFunc("/", handlePostRequest)
+	// fetchImage
+	var imgs []Images
+	http.HandleFunc("/", handlePostRequest)
+	imgs, err := fetchImg(tgtDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	imgs = sorter(imgs)
 
-    fmt.Println("http://localhost:8080/")
-    fmt.Println("curl -X POST -H \"Content-Type: application/json\" -d '{\"dir\": \"../\"}' http://localhost:8080/")
-    
-    log.Fatal(http.ListenAndServe(":8080", nil))
+	// setup
+	handler1 := func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Only POST requests are allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		var buf bytes.Buffer
+		enc := json.NewEncoder(&buf)
+		if err := enc.Encode(&imgs); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(buf.String())
+
+		_, err := fmt.Fprint(w, buf.String())
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	// POST
+	fmt.Println("http://localhost:8080/")
+	fmt.Println("curl -X POST -H \"Content-Type: application/json\" -d '{\"dir\": \"../\"}' http://localhost:8080/")
+	http.HandleFunc("/", handler1)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
