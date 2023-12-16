@@ -2,40 +2,25 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
+	"log"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
-type PageVariables struct {
-	ImagesPaths []string
-}
+func main() {
+	tgtDirText := "testImg"
+	tgtDir := os.DirFS(tgtDirText)
 
-func visit(variables *PageVariables) filepath.WalkFunc {
-	return func(path string, info os.FileInfo, err error) error {
+	fs.WalkDir(tgtDir, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			if os.IsPermission(err) {
-				return nil
+			if !os.IsPermission(err) {
+				log.Fatal(err)
 			}
-			return err
 		}
-		if !info.IsDir() && strings.HasSuffix(strings.ToLower(path), "png") {
-			variables.ImagesPaths = append(variables.ImagesPaths, path)
+		if strings.Contains(path, ".png") {
+			fmt.Println(path)
 		}
 		return nil
-	}
-}
-
-func main() {
-	tgtDir := "testImg"
-
-	var variables PageVariables
-	if err := filepath.Walk(tgtDir, visit(&variables)); err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-
-	for _, v := range variables.ImagesPaths {
-		fmt.Println(v)
-	}
+	})
 }
