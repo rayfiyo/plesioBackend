@@ -8,7 +8,7 @@ import (
 )
 
 type PageVariables struct {
-	ImagePaths []string
+	ImagesPaths []string
 }
 
 func visit(variables *PageVariables) filepath.WalkFunc {
@@ -20,7 +20,7 @@ func visit(variables *PageVariables) filepath.WalkFunc {
 			return err
 		}
 		if !info.IsDir() && strings.HasSuffix(strings.ToLower(path), "png") {
-			variables.ImagePaths = append(variables.ImagePaths, path)
+			variables.ImagesPaths = append(variables.ImagesPaths, path)
 		}
 		return nil
 	}
@@ -35,5 +35,7 @@ func main() {
 		return
 	}
 
-	fmt.Println(variables.ImagePaths)
+	for _, v := range variables.ImagesPaths {
+		fmt.Println(v)
+	}
 }
