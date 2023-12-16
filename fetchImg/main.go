@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -51,13 +52,22 @@ func fetchImg(tgtDirText string) ([]Images, error) {
 	return imgData, nil
 }
 
+func sorter(imgs []Images) []Images {
+	sort.Slice(imgs, func(i, j int) bool {
+		return imgs[i].Date < imgs[j].Date
+	})
+	return imgs
+}
+
 func main() {
 	// fetchImage
-	imgs := make([]Images, 1)
+	var imgs []Images
 	imgs, err := fetchImg("../")
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
+
+	imgs = sorter(imgs)
 
 	// setup
 	handler1 := func(w http.ResponseWriter, r *http.Request) {
@@ -70,7 +80,7 @@ func main() {
 
 		_, err := fmt.Fprint(w, buf.String())
 		if err != nil {
-			return
+			log.Fatal(err)
 		}
 	}
 
