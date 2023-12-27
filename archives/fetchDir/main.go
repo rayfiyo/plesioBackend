@@ -63,6 +63,10 @@ func main() {
 
 	// setup
 	handler1 := func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Only POST requests are allowed", http.StatusMethodNotAllowed)
+			return
+		}
 		var buf bytes.Buffer
 		enc := json.NewEncoder(&buf)
 		if err := enc.Encode(&dirs); err != nil {
@@ -76,8 +80,9 @@ func main() {
 		}
 	}
 
-	// GET
-	fmt.Println("http://localhost:8080/images")
-	http.HandleFunc("/images", handler1)
+	// POST
+	fmt.Println("http://localhost:8080/")
+	fmt.Println("curl -X POST http://localhost:8080/")
+	http.HandleFunc("/", handler1)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
