@@ -33,7 +33,7 @@ func main() {
 	fmt.Println("http://localhost:8080/")
 	fmt.Println("curl -X POST http://localhost:8080/")
 	fmt.Println("touch testImg/unneeded.png")
-	fmt.Println("curl -X POST -H \"Content-Type: application/json\" -d '{\"dir\": \"/\"}' http://localhost:8080/")
+	fmt.Println("curl -X POST -H \"Content-Type: application/json\" -d '{\"dir\": \"../\"}' http://localhost:8080/")
 	fmt.Println("curl -X POST -H \"Content-Type: application/json\" -d '{\"img_root\": \"../\"}' http://localhost:8080/")
 	fmt.Println("curl -X POST -H \"Content-Type: application/json\" -d '{\"path\": \"testImg/unneeded.png\"}' http://localhost:8080/")
 
